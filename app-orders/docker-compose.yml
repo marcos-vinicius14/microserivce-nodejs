@@ -9,13 +9,6 @@ services:
     volumes:
       - pg_data:/bitnami/postgresql
       - ./docker:/docker-entrypoint-initdb.d
-  broker:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    env_file:
-      - .env
-
+      
 volumes:
   pg_data:

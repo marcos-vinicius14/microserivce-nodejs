@@ -1,3 +1,4 @@
+import '@opentelemetry/auto-instrumentations-node/register'
 import '../broker/consumer/consumer.ts'
 
 import { fastify } from 'fastify';

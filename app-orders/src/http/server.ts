@@ -1,3 +1,4 @@
+import '@opentelemetry/auto-instrumentations-node/register'
 import { fastify } from 'fastify';
 import { fastifyCors } from '@fastify/cors';
 import { z } from 'zod';
@@ -7,7 +8,10 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { randomUUID } from 'node:crypto';
+import { trace } from '@opentelemetry/api'
 import { sendOrderCreated } from '../broker/messages/order-created.ts';
+import { db } from '../db/client.ts';
+import { schema } from '../db/schema/index.ts';
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
@@ -37,6 +41,16 @@ app.post('/orders', {
       id: randomUUID()
     }
   });
+
+  await db.insert(schema.orders).values({
+    id: orderId,
+    customerId: randomUUID(),
+    amount
+  })
+
+
+  trace.getActiveSpan()?.setAttribute('orderId', orderId)
+  
   
   return reply.status(201).send({ message: 'Order created' });
 });
