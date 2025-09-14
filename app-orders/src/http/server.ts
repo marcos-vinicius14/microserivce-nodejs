@@ -6,14 +6,12 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
-import { channels } from '../broker/channels/index.ts';
-import { db } from '../db/client.ts';
-import { schema } from '../db/schema/index.ts';
 import { randomUUID } from 'node:crypto';
+import { sendOrderCreated } from '../broker/messages/order-created.ts';
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
-  origin: '*', // Em produção, restrinja para o seu domínio: 'https://meu-dominio.com'
+  origin: '*', // Em produção, restrinja para o domínio: 'https://meu-dominio.com'
 });
 
 app.setSerializerCompiler(serializerCompiler);
@@ -29,15 +27,16 @@ app.post('/orders', {
   const { amount } = request.body;
   console.log(`[ORDERS] Creating order with amount: ${amount}`);
 
+  const orderId: string = randomUUID();
 
 
-  await channels.orders.sendToQueue('orders', Buffer.from('Hello World'));
-
-  await db.insert(schema.orders).values({
-    id: randomUUID(),
-    customerId: randomUUID(),
-    amount: amount
-  })
+  sendOrderCreated({
+    orderId: orderId,
+    amount,
+    customer: {
+      id: randomUUID()
+    }
+  });
   
   return reply.status(201).send({ message: 'Order created' });
 });
