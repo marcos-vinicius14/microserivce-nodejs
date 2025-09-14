@@ -1,8 +1,8 @@
 services:
-  pg:
+  invoices_pg:
     image: bitnami/postgresql:latest
     ports:
-      - "5482:5482"
+      - "5483:5482"
     env_file:
       - .env
 
