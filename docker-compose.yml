@@ -1,4 +1,46 @@
 services:
+  app-invoices:
+    build: ./app-invoices 
+    env_file:
+      - ./app-invoices/.env
+    networks:
+      - microservices-net
+    depends_on:
+      - invoices_pg
+      - broker
+
+  app-orders:
+    build: ./app-orders 
+    env_file:
+      - ./app-orders/.env
+    networks:
+      - microservices-net
+    depends_on:
+      - orders_pg
+      - broker
+
+  invoices_pg:
+    image: bitnami/postgresql:latest
+    ports:
+      - "5483:5482"
+    env_file:
+      - ./app-invoices/.env
+    volumes:
+      - invoices_pg_data:/bitnami/postgresql
+    networks:
+      - microservices-net
+
+  orders_pg:
+    image: bitnami/postgresql:latest
+    ports:
+      - "5482:5482"
+    env_file:
+      - ./app-orders/.env
+    volumes:
+      - orders_pg_data:/bitnami/postgresql
+    networks:
+      - microservices-net
+
   broker:
     image: rabbitmq:3-management
     ports:
@@ -36,3 +78,7 @@ services:
 
 volumes:
   rabbitmq_data:
+
+networks:
+  microservices-net:
+    driver: bridge
